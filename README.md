@@ -25,7 +25,7 @@
 
 ```bash
 cd crm
-docker-compose up --build
+docker compose up --build
 ```
 
 API будет доступен на `http://localhost:8000`
@@ -45,11 +45,18 @@ poetry install
 2. Создайте `.env` файл:
 
 ```env
-DATABASE_URL=postgresql+asyncpg://user:password@localhost:5432/crm
-SECRET_KEY=your-secret-key-here
-JWT_ALGORITHM=HS256
-ACCESS_TOKEN_LIFETIME=30
-REFRESH_TOKEN_LIFETIME=10080
+DEBUG=True
+POSTGRES_DB="crm"
+POSTGRES_PASSWORD="crm"
+POSTGRES_USER="crm"
+POSTGRES_PORT=5432
+POSTGRES_HOSTNAME=db
+DATABASE_DIALECT="postgresql"
+JWT_ALGORITHM="HS256"
+SECRET_KEY="FEWIFEIBFIUEWBIFBEIBFEWU"
+ACCESS_TOKEN_LIFETIME=3600
+REFRESH_TOKEN_LIFETIME=43200
+
 ```
 
 3. Запустите PostgreSQL и примените миграции:
@@ -89,7 +96,7 @@ crm/
 - `entities.py` — Pydantic модели (бизнес-объекты)
 - `schemas.py` — схемы запросов/ответов API
 - `repositories.py` — работа с базой данных
-- `usecases.py` — бизнес-логика
+- `usecases.py` — сценарная бизнес-логика (при появлении более сложных механизмов, можно выделить их в сервисы)
 - `router.py` — HTTP эндпоинты
 - `providers.py` — Dependency Injection
 
