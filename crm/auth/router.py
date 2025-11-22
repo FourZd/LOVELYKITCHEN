@@ -3,7 +3,7 @@ from fastapi import APIRouter, Header
 from dishka.integrations.fastapi import inject
 from dishka import FromComponent
 
-from auth.schemas import RegisterRequest, LoginRequest, LoginResponse
+from auth.schemas import RegisterRequest, LoginRequest, LoginResponse, TokenResponse
 from auth.usecases import RegisterUseCase, LoginUseCase
 
 
@@ -22,7 +22,7 @@ async def register(
     tokens = await register_usecase(
         request.email, request.password, request.name, request.organization_name
     )
-    return LoginResponse(data=tokens)
+    return LoginResponse(data=TokenResponse(**tokens.model_dump()))
 
 
 @router.post("/login", response_model=LoginResponse)
@@ -33,5 +33,5 @@ async def login(
     login_usecase: Annotated[LoginUseCase, FromComponent("auth")],
 ):
     tokens = await login_usecase(request.email, request.password, x_organization_id)
-    return LoginResponse(data=tokens)
+    return LoginResponse(data=TokenResponse(**tokens.model_dump()))
 

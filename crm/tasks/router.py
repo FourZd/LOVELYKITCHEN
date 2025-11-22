@@ -1,5 +1,5 @@
 from typing import Annotated, Optional
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from uuid import UUID
 from datetime import date
 from dishka.integrations.fastapi import inject

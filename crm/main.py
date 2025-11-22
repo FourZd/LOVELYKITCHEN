@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError, HTTPException
+from fastapi.openapi.utils import get_openapi
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from dishka.integrations.fastapi import setup_dishka
@@ -24,9 +25,40 @@ from analytics.router import router as analytics_router
 
 app = FastAPI(
     title="Mini-CRM API",
-    description="Multi-tenant test application CRM system with organizations, contacts, deals, tasks, and analytics",
+    description="Multi-tenant CRM system with organizations, contacts, deals, tasks, and analytics",
     version="1.3.3.7",
+    swagger_ui_parameters={
+        "persistAuthorization": True,
+    }
 )
+
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    
+    
+    
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+    )
+    
+    openapi_schema["components"]["securitySchemes"] = {
+        "HTTPBearer": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+        }
+    }
+    
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+
+app.openapi = custom_openapi
 
 app.add_middleware(
     CORSMiddleware,
