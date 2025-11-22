@@ -60,24 +60,23 @@ class AuthProvider(Provider):
         if not org_id_header:
             raise AuthorizationException("error.auth.organization_id_not_provided")
         
-        if payload.get("organization_id") != org_id_header:
-            raise OrganizationAccessDeniedError()
-        
         from uuid import UUID
         user = await user_repository.get_user_by_id(UUID(payload["id"]))
         if not user:
             raise AuthorizationException("error.auth.user.not_found")
         
+        # Проверяем, что пользователь состоит в организации из заголовка
         membership = await user_repository.get_user_membership(
             UUID(payload["id"]), UUID(org_id_header)
         )
         if not membership:
             raise OrganizationAccessDeniedError()
         
+        # Используем organization_id из заголовка, а не из токена!
         return AuthenticatedUser(
             id=UUID(payload["id"]),
             email=payload["email"],
-            organization_id=UUID(payload["organization_id"]),
+            organization_id=UUID(org_id_header),
             role=membership.role,
         )
 

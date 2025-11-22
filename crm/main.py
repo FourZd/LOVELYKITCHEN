@@ -15,6 +15,7 @@ from core.exception_handler import (
 from core.exceptions import BaseCustomException
 
 from auth.router import router as auth_router
+from users.router import router as users_router
 from organizations.router import router as organizations_router
 from contacts.router import router as contacts_router
 from deals.router import router as deals_router
@@ -97,6 +98,7 @@ app.add_middleware(
 setup_dishka(container, app)
 
 app.include_router(auth_router)
+app.include_router(users_router)
 app.include_router(organizations_router)
 app.include_router(contacts_router)
 app.include_router(deals_router)

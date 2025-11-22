@@ -5,7 +5,7 @@ from typing import Optional
 from core.database.unit_of_work import UnitOfWork
 from contacts.repositories import ContactRepository
 from contacts.entities import ContactEntity
-from contacts.exceptions import ContactNotFoundError, ContactAccessDeniedError, ContactHasActiveDealsError
+from contacts.exceptions import ContactNotFoundError, ContactAccessDeniedError, ContactHasDealsError
 from users.enums import UserRole
 from auth.entities import AuthenticatedUser
 
@@ -90,9 +90,9 @@ class DeleteContactUseCase:
             if user.role == UserRole.MEMBER.value and contact.owner_id != user.id:
                 raise ContactAccessDeniedError()
             
-            has_deals = await self._contact_repository.has_active_deals(contact_id)
+            has_deals = await self._contact_repository.has_deals(contact_id)
             if has_deals:
-                raise ContactHasActiveDealsError()
+                raise ContactHasDealsError()
             
             await self._contact_repository.delete(contact_id)
 
@@ -111,8 +111,8 @@ class ListContactsUseCase:
         owner_id: Optional[UUID] = None,
     ) -> tuple[list[ContactEntity], int]:
         async with self._uow:
-            if user.role == UserRole.MEMBER.value:
-                owner_id = user.id
+            # Member может видеть все контакты в организации
+            # Фильтр owner_id применяется только если явно указан
             
             return await self._contact_repository.list_by_organization(
                 user.organization_id, page, page_size, search, owner_id

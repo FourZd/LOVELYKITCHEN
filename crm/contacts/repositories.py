@@ -63,7 +63,8 @@ class ContactRepository:
         
         return [ContactEntity.model_validate(c) for c in contacts], total or 0
 
-    async def has_active_deals(self, contact_id: UUID) -> bool:
+    async def has_deals(self, contact_id: UUID) -> bool:
+        """Проверяет, есть ли у контакта сделки в любой стадии"""
         query = select(exists().where(Deal.contact_id == contact_id))
         result = await self._session.execute(query)
         return result.scalar()

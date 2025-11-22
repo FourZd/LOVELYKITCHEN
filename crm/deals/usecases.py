@@ -202,8 +202,8 @@ class ListDealsUseCase:
         order: str = "desc",
     ) -> tuple[list[DealEntity], int]:
         async with self._uow:
-            if user.role == UserRole.MEMBER.value:
-                owner_id = user.id
+            # Member может видеть все сделки в организации
+            # Фильтр owner_id применяется только если явно указан (для manager/admin/owner)
             
             status_enums = [DealStatus(s) for s in statuses] if statuses else None
             stage_enum = DealStage(stage) if stage else None

@@ -11,7 +11,7 @@ class ContactAccessDeniedError(ForbiddenException):
         super().__init__(message)
 
 
-class ContactHasActiveDealsError(ConflictException):
-    def __init__(self, message: str = "error.contact.has_active_deals"):
+class ContactHasDealsError(ConflictException):
+    def __init__(self, message: str = "error.contact.has_deals"):
         super().__init__(message)
 

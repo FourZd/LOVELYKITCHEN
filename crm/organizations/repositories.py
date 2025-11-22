@@ -1,11 +1,11 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from uuid import UUID
 from typing import Optional
 
 from organizations.models import Organization
-from organizations.entities import OrganizationEntity
-from users.models import OrganizationMember
+from organizations.entities import OrganizationEntity, OrganizationWithRoleEntity, OrganizationMemberEntity
+from users.models import OrganizationMember, User
 from users.enums import UserRole
 
 
@@ -36,13 +36,75 @@ class OrganizationRepository:
         self._session.add(member)
         await self._session.flush()
 
-    async def get_user_organizations(self, user_id: UUID) -> list[OrganizationEntity]:
+    async def get_user_organizations(self, user_id: UUID) -> list[OrganizationWithRoleEntity]:
+        """Получить список организаций пользователя с его ролями"""
         query = (
-            select(Organization)
-            .join(OrganizationMember)
+            select(
+                Organization.id,
+                Organization.name,
+                Organization.created_at,
+                OrganizationMember.role
+            )
+            .join(OrganizationMember, Organization.id == OrganizationMember.organization_id)
             .where(OrganizationMember.user_id == user_id)
         )
         result = await self._session.execute(query)
-        orgs = result.scalars().all()
-        return [OrganizationEntity.model_validate(org) for org in orgs]
+        rows = result.all()
+        return [
+            OrganizationWithRoleEntity(
+                id=row.id,
+                name=row.name,
+                created_at=row.created_at,
+                role=row.role
+            )
+            for row in rows
+        ]
+
+    async def get_members(self, organization_id: UUID) -> list[OrganizationMemberEntity]:
+        query = (
+            select(
+                OrganizationMember.id,
+                OrganizationMember.organization_id,
+                OrganizationMember.user_id,
+                User.email.label("user_email"),
+                User.name.label("user_name"),
+                OrganizationMember.role
+            )
+            .join(User, OrganizationMember.user_id == User.id)
+            .where(OrganizationMember.organization_id == organization_id)
+        )
+        result = await self._session.execute(query)
+        rows = result.all()
+        return [
+            OrganizationMemberEntity(
+                id=row.id,
+                organization_id=row.organization_id,
+                user_id=row.user_id,
+                user_email=row.user_email,
+                user_name=row.user_name,
+                role=row.role
+            )
+            for row in rows
+        ]
+
+    async def get_member(self, organization_id: UUID, user_id: UUID) -> Optional[OrganizationMember]:
+        query = select(OrganizationMember).where(
+            OrganizationMember.organization_id == organization_id,
+            OrganizationMember.user_id == user_id
+        )
+        result = await self._session.execute(query)
+        return result.scalar_one_or_none()
+
+    async def update_member_role(self, organization_id: UUID, user_id: UUID, role: UserRole):
+        member = await self.get_member(organization_id, user_id)
+        if member:
+            member.role = role
+            await self._session.flush()
+
+    async def remove_member(self, organization_id: UUID, user_id: UUID):
+        query = delete(OrganizationMember).where(
+            OrganizationMember.organization_id == organization_id,
+            OrganizationMember.user_id == user_id
+        )
+        await self._session.execute(query)
 
