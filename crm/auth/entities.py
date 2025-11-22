@@ -9,6 +9,7 @@ class TokenPair(BaseModel):
     refresh_token: str
     access_expiration: int
     refresh_expiration: int
+    organization_id: str
 
 
 class AuthenticatedUser(BaseModel):

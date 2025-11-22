@@ -93,6 +93,7 @@ class RegisterUseCase:
                 refresh_token=refresh_token,
                 access_expiration=int(access_expiration.timestamp()),
                 refresh_expiration=int(refresh_expiration.timestamp()),
+                organization_id=str(org_id),
             )
 
 
@@ -154,5 +155,6 @@ class LoginUseCase:
                 refresh_token=refresh_token,
                 access_expiration=int(access_expiration.timestamp()),
                 refresh_expiration=int(refresh_expiration.timestamp()),
+                organization_id=organization_id,
             )
 

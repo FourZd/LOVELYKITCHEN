@@ -37,8 +37,6 @@ def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
     
-    
-    
     openapi_schema = get_openapi(
         title=app.title,
         version=app.version,
@@ -51,8 +49,36 @@ def custom_openapi():
             "type": "http",
             "scheme": "bearer",
             "bearerFormat": "JWT",
+            "description": "Введите JWT токен (без префикса 'Bearer')",
+        },
+        "X-Organization-Id": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "X-Organization-Id",
+            "description": "UUID организации для мультитенантности",
         }
     }
+    
+    for path, path_item in openapi_schema.get("paths", {}).items():
+        if path == "/api/v1/auth/register":
+            continue
+        
+        if path == "/api/v1/auth/login":
+            for method in path_item:
+                if method in ["get", "post", "put", "patch", "delete"]:
+                    if "security" not in path_item[method]:
+                        path_item[method]["security"] = [
+                            {"X-Organization-Id": []}
+                        ]
+            continue
+        
+        for method in path_item:
+            if method in ["get", "post", "put", "patch", "delete"]:
+                if "security" not in path_item[method]:
+                    path_item[method]["security"] = [
+                        {"HTTPBearer": []},
+                        {"X-Organization-Id": []}
+                    ]
     
     app.openapi_schema = openapi_schema
     return app.openapi_schema

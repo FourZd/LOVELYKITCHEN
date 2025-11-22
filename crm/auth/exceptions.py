@@ -1,4 +1,4 @@
-from core.exceptions import AuthorizationException, BadRequestException
+from core.exceptions import AuthorizationException
 
 
 class InvalidCredentialsError(AuthorizationException):

@@ -4,6 +4,7 @@ from typing import Optional
 from decimal import Decimal
 
 from deals.entities import DealEntity
+from deals.enums import DealStatus, DealStage
 
 
 class CreateDealRequest(BaseModel):
@@ -17,8 +18,8 @@ class UpdateDealRequest(BaseModel):
     title: Optional[str] = Field(None, min_length=1, max_length=255)
     amount: Optional[Decimal] = Field(None, ge=0)
     currency: Optional[str] = Field(None, max_length=10)
-    status: Optional[str] = None
-    stage: Optional[str] = None
+    status: Optional[DealStatus] = None
+    stage: Optional[DealStage] = None
 
 
 class DealResponse(BaseModel):
